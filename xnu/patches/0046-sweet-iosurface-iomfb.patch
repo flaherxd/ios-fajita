@@ -20,7 +20,7 @@
 +    "   {"
 +    "     'IOClass'         = AppleCLCD;"
 +    "     'IOProviderClass' = IOPlatformDevice;"
-+    "     'IONameMatch'     = ('fajita,display', 'sweet,display');"
++    "     'IONameMatch'     = 'sweet,display';"
 +    "   },"
  #endif
      "   {"

@@ -241,11 +241,7 @@
 +extern void sweet_hid_touch(int finger, int down, int x, int y);
 +void sweet_touch_init(void);
 +
-+#if defined(FAJITA)
-+#define TOUCH_SE_PA      0x00a90000u /* SDM845 GENI QUP SE10 */
-+#else
 +#define TOUCH_SE_PA      0x00a84000u
-+#endif
 +#define TOUCH_GCC_PA     0x00100000u
 +#define TOUCH_NORTH_PA   0x03900000u /* DT TLMM + NORTH (0x500000) */
 +#define TOUCH_GCC_VOTE   0x5200cu
