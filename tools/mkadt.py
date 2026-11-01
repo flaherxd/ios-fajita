@@ -114,7 +114,7 @@ def build(seed=None, qemu=False, highmem=False):
         cpu_nodes.append(node(f'cpu{core}', [
             ph(),
             ('device_type', cstr('cpu')),
-            ('compatible', cstr('qcom,kryo385') + cstr('ARM,v8')),
+            ('compatible', cstr('qcom,kryo385') + cstr('qcom,kryo470') + cstr('ARM,v8')),
             ('reg', u32(core << 8)),  # actual MPIDR Aff1:Aff0 (0x000, 0x100, ... 0x700)
             ('cpu-id', u32(core)),
             ('cluster-id', u32(0)),
@@ -143,8 +143,8 @@ def build(seed=None, qemu=False, highmem=False):
     ])
     arm_io = node('arm-io', [
         ph(),
-        ('device_type', cstr('fajita-io')),
-        ('compatible', cstr('fajita-io') + cstr('sweet-io') + cstr('arm-io')),
+        ('device_type', cstr('sweet-io')),
+        ('compatible', cstr('sweet-io') + cstr('fajita-io') + cstr('arm-io')),
         ('#address-cells', u32(2)),
         ('#size-cells', u32(2)),
         ('ranges', u64(0, SOC_BASE, 0x100000000 - SOC_BASE)),
@@ -152,13 +152,14 @@ def build(seed=None, qemu=False, highmem=False):
         node('wdt', [ph(), ('no-pmu', u32(1))]),
         node('disp0', [
             ph(),
+            ('name', cstr('sweet,display')),
             ('device_type', cstr('display-subsystem')),
-            ('compatible', cstr('fajita,display') + cstr('sweet,display')),
+            ('compatible', cstr('sweet,display') + cstr('fajita,display')),
             ('canvas-width', u32(1125)),
             ('canvas-height', u32(2436)),
         ])])
 
-    fbcon = node('fajita-fbcon', [
+    fbcon = node('sweet-fbcon', [
         ph(),
         ('reg', u64(FB, FB_SIZE)),
         ('width', u32(FB_W)),
@@ -166,7 +167,7 @@ def build(seed=None, qemu=False, highmem=False):
         ('stride', u32(FB_STRIDE)),
     ])
 
-    ufs = node('fajita-ufs', [
+    ufs = node('sweet-ufs', [
         ph(),
         ('compatible', cstr('qcom,ufshc')),
         ('reg', u64(UFS, UFS_SIZE)),
