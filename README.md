@@ -1,32 +1,42 @@
 # ios-fajita
 
-**Apple's iOS 16 running on the OnePlus 6T.**
+**Apple's iOS 16 running on the OnePlus 6T (Experimental Bringup).**
 
-This project ports Apple's open-source XNU kernel (xnu-8796, the iOS 16 generation) to the **OnePlus 6T** (`fajita`, Qualcomm SDM845 / Snapdragon 845). On top of it runs the **unmodified iOS 16.7.16 (20H392) userland of the iPhone X**: `launchd`, system daemons, `backboardd`, `SpringBoard`, and stock applications.
-
-The phone boots to the **iOS home screen**. You can unlock it, open Settings, pull down Control Center and Notification Center, and interact via touchscreen and physical hardware buttons. CoreAnimation rendering runs on the CPU via software rasterization.
-
-> [!WARNING]
-> Experimental bring-up and research project, not a daily-driver mobile OS. Core telephony/cellular, cameras, audio DSP, and GPU hardware acceleration are incomplete or stubbed. Apple's secure enclave and data protection are bypassed. Installing writes to the `userdata` partition and **erases existing user data**.
+> [!CAUTION]
+> ### ⚠️ ALMOST NOTHING WORKS!
+> This project is an early-stage, proof-of-concept research bring-up. 
+> - **TOUCH DOES NOT WORK**: The touchscreen does not respond to input (Synaptics RMI4 driver is WIP / not yet implemented).
+> - **NO GPU ACCELERATION**: CoreAnimation runs purely on CPU software rasterization (very slow / high CPU load).
+> - **NO WI-FI / BLUETOOTH**: Wireless chipsets are uninitialized and non-functional.
+> - **NO CELLULAR / CALLS / SMS**: Baseband modem is completely unmanaged.
+> - **NO AUDIO / CAMERAS / SENSORS**: No DSP, no camera sensor drivers, no haptics.
+> - **DO NOT ATTEMPT TO USE AS A DAILY OS**: It currently only boots as far as the **iOS 16 Lock Screen clock**.
+> - **ERASES STORAGE**: Flashing writes an HFS+ image to the `userdata` partition and wipes all existing data!
 
 ---
 
-## Hardware & Feature Status
+## Current Status
+
+The project can boot Apple's open-source XNU Mach-O kernel (xnu-8796, iOS 16 generation) on the **OnePlus 6T** (`fajita`, Qualcomm Snapdragon 845 / SDM845), mounting genuine unmodified **iOS 16.7.16 (20H392)** userland from the UFS storage partition. PID 1 `launchd`, `backboardd`, and `SpringBoard` execute and composite the iOS 16 Lock Screen with the clock rendered via CPU software rasterization to the bootloader's continuous AMOLED framebuffer.
+
+However, beyond booting to the lock screen clock, **practically nothing is functional**.
+
+### Hardware & Feature Status
 
 | Subsystem | State | Details |
 | :--- | :--- | :--- |
-| **Boot** | Working | Stock OnePlus ABL bootloader &rarr; `fastboot boot shim-boot.img` &rarr; XNU. No persistent changes to boot partitions. |
-| **CPU** | Working | Qualcomm Snapdragon 845 (Kryo 385: 4x Cortex-A75 Gold + 4x Cortex-A55 Silver) via PSCI `CPU_ON`, 16 KB page granule, GICv3 Group 1 IRQs, 19.2 MHz generic arch timer. |
-| **Memory** | Working | Upper DDR bank above 4 GiB (`0x100000000`, up to ~5.95 GiB DRAM) above Qualcomm protected XPU carve-outs. |
-| **Storage** | Working | Qualcomm UFSHCI 2.1 host controller driver (`0x01d84000`); iOS root resides on a journaled HFS+ volume in the `userdata` partition, read/write. |
-| **iOS Userland** | Working | Genuine iPhone X (`iPhone10,3` / `D22AP`) 16.7.16 root filesystem & dyld shared cache; `launchd` and system daemons operational. |
-| **Display** | Working | Kernel `IOSurface` + `IOMobileFramebuffer` (`AppleCLCD`) services; CPU software rasterizer; frames blitted to bootloader splash buffer at `0x9d400000`. Presented to iOS as an iPhone X display (1125&times;2436 @3x). |
-| **GUI** | Working | `backboardd`, `SpringBoard`, lock screen, passcode/swipe unlock, home screen, Control Center, Notification Center, Settings app. |
-| **Touch** | Working | Synaptics RMI4 multi-touch (`s6sy761` / `syna,rmi4-i2c`) over GENI QUP SE10 (`0xa90000`), delivered as HID digitizer events with coordinate mapping. |
-| **Buttons** | Working | Power button (PM8998 PON block via SPMI), Volume Up/Down (PM8998 GPIOs) as HID consumer keys; wake/sleep and volume controls. |
-| **Battery** | Working | Synthetic `IOPMPowerSource` reporting 100% charged status to iOS power management daemons. |
-| **Device ID** | Working | iPhone X (`iPhone10,3` / `D22AP` / `D22`), gesture navigation without home button. |
-| **Activation** | Working | Native "Hactivation" path in `mobileactivationd` selected via device tree security status tuples. |
+| **Bootchain** | Working | Stock OnePlus ABL &rarr; `fastboot boot shim-boot.img` &rarr; XNU. |
+| **CPU / PSCI** | Working | Snapdragon 845 (4x Gold + 4x Silver), GICv3 interrupts, 16 KB pages. |
+| **Storage (UFS)** | Working | Qualcomm UFSHCI 2.1 driver (`0x01d84000`), mounts HFS+ root on `userdata`. |
+| **Display / Lock Screen** | Partial | Framebuffer blitted to `0x9d400000`. Displays the iOS 16 Lock Screen and clock. |
+| **Touchscreen** | **NOT WORKING** | Synaptics RMI4 (`0x00a90000` / address `0x20`) driver not yet implemented. Touch does not register. |
+| **GPU Acceleration** | **NOT WORKING** | Adreno 630 unsupported; relies on slow CPU software rasterization. |
+| **Wi-Fi & Bluetooth** | **NOT WORKING** | WCN3990 uninitialized; no wireless connectivity. |
+| **Cellular / Modem** | **NOT WORKING** | Qualcomm MDM / QMI modem unmanaged; no calls, data, or SMS. |
+| **Audio** | **NOT WORKING** | WCD9340 codec and audio DSP uninitialized; no sound. |
+| **Cameras** | **NOT WORKING** | Spectra 280 ISP and camera sensors unmanaged. |
+| **Hardware Buttons** | Partial | Power and Volume buttons handled as basic HID events. |
+| **Battery / Power** | Stubbed | Synthetic power source reporting stubbed values to prevent shutdown. |
 
 ---
 
