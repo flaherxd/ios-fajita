@@ -31,6 +31,31 @@ IDENT = b'org.sweet.init\0'
 
 def text_of(obj):
     """Return (__text bytes, _start offset); refuse anything that needs linking."""
+    if obj.startswith(b'\x7fELF'):
+        e_shoff, = struct.unpack_from('<Q', obj, 40)
+        e_shentsize, e_shnum, e_shstrndx = struct.unpack_from('<HHH', obj, 58)
+        sections = []
+        for i in range(e_shnum):
+            sh = obj[e_shoff + i * e_shentsize: e_shoff + (i + 1) * e_shentsize]
+            name_idx, s_type, flags, addr, offset, size, link, info, addralign, entsize = struct.unpack('<IIQQQQIIQQ', sh)
+            sections.append(dict(idx=i, name_idx=name_idx, type=s_type, offset=offset, size=size, link=link, info=info, entsize=entsize))
+        strtab = obj[sections[e_shstrndx]['offset']: sections[e_shstrndx]['offset'] + sections[e_shstrndx]['size']]
+        for s in sections:
+            s['name'] = strtab[s['name_idx']:].split(b'\0')[0].decode(errors='ignore')
+        text_sec = next(s for s in sections if s['name'] == '.text')
+        symtab_sec = next((s for s in sections if s['name'] == '.symtab'), None)
+        text_bytes = obj[text_sec['offset']: text_sec['offset'] + text_sec['size']]
+        start_val = 0
+        if symtab_sec:
+            sym_strtab = obj[sections[symtab_sec['link']]['offset']:]
+            for i in range(symtab_sec['size'] // symtab_sec['entsize']):
+                sym = obj[symtab_sec['offset'] + i * symtab_sec['entsize']: symtab_sec['offset'] + (i + 1) * symtab_sec['entsize']]
+                st_name, st_info, st_other, st_shndx, st_value, st_size = struct.unpack('<IBBHQQ', sym)
+                name = sym_strtab[st_name:].split(b'\0')[0].decode(errors='ignore')
+                if name == '_start':
+                    start_val = st_value
+                    break
+        return bytes(text_bytes), start_val
     magic, cpu, _, ftype, ncmds, _, _, _ = struct.unpack_from('<8I', obj, 0)
     assert magic == MH_MAGIC_64 and cpu == CPU_TYPE_ARM64 and ftype == 1, 'not an arm64 object'
     text, symtab, off = None, None, 32
