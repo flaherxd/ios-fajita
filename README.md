@@ -5,6 +5,7 @@
 > [!CAUTION]
 > ### ⚠️ ALMOST NOTHING WORKS!
 > This project is an early-stage, proof-of-concept research bring-up. 
+> - **BOOT TAKES A REALLY LONG TIME**: The device stays on the Apple logo for a very long time (typically 4–6+ minutes) before anything appears, as SpringBoard and UIKit views are rendered purely on the CPU via software rasterization.
 > - **TOUCH DOES NOT WORK**: The touchscreen does not respond to input (Synaptics RMI4 driver is WIP / not yet implemented).
 > - **NO GPU ACCELERATION**: CoreAnimation runs purely on CPU software rasterization (very slow / high CPU load).
 > - **NO WI-FI / BLUETOOTH**: Wireless chipsets are uninitialized and non-functional.
@@ -25,7 +26,7 @@ However, beyond booting to the lock screen clock, **practically nothing is funct
 
 | Subsystem | State | Details |
 | :--- | :--- | :--- |
-| **Bootchain** | Working | Stock OnePlus ABL &rarr; `fastboot boot shim-boot.img` &rarr; XNU. |
+| **Bootchain** | Working | Stock OnePlus ABL &rarr; `fastboot boot shim-boot.img` &rarr; XNU. **Takes a very long time** (sits on Apple logo for several minutes). |
 | **CPU / PSCI** | Working | Snapdragon 845 (4x Gold + 4x Silver), GICv3 interrupts, 16 KB pages. |
 | **Storage (UFS)** | Working | Qualcomm UFSHCI 2.1 driver (`0x01d84000`), mounts HFS+ root on `userdata`. |
 | **Display / Lock Screen** | Partial | Framebuffer blitted to `0x9d400000`. Displays the iOS 16 Lock Screen and clock. |
@@ -125,7 +126,9 @@ fastboot -S 512M flash userdata ios16-root.simg
 fastboot boot shim/out/shim-boot.img
 ```
 
-The initial boot performs system daemon initialization and starts SpringBoard in approximately 3–4 minutes.
+> [!IMPORTANT]
+> **Booting takes a really long time!**
+> The device will sit on the Apple logo for a very long time (typically 4–6+ minutes) while XNU mounts storage, `launchd` spawns background daemons, and `SpringBoard` slowly compiles and rasterizes UIKit views entirely on the CPU. **Do not interrupt or force-reboot the device**—give it plenty of time to reach the clock.
 
 ### 5. Diagnostics and Kernel Logs
 To retrieve the 4 MiB kernel log buffer from recovery:
