@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-export PATH="/home/artur/.local/bin:$PATH"
+export PATH="/home/artur/.local/bin:/usr/local/bin:/usr/bin:/bin:${PATH:-}"
 
 IPSW_URL="https://updates.cdn-apple.com/2025FallFCS/fullrestores/122-77006/1158E502-D76D-4226-AA06-ED5E30CD1111/iPhone10,3,iPhone10,6_16.7.16_20H392_Restore.ipsw"
 DMG_DIR="$REPO_ROOT/research/ipsw-x"
@@ -15,7 +15,7 @@ OUT_SIMG="$REPO_ROOT/ios16-root.simg"
 
 OS_DMG="087-86698-044.dmg"
 SYSOS_DMG="087-86593-047.dmg"
-APPOS_DMG="087-86719-047.dmg"
+APPOS_DMG="087-86715-047.dmg"
 
 echo "=== OnePlus 6T iOS 16 Root Image Builder ==="
 echo "Target: $OUT_SIMG"
@@ -25,6 +25,15 @@ if [ "$EUID" -ne 0 ] && ! sudo -v; then
     echo "Error: Root privileges (sudo) required for loopback mounting and APFS extraction." >&2
     exit 1
 fi
+
+# Install custom-compiled tools to /usr/local/bin so sudo finds them in secure_path
+echo "[*] Ensuring tools in /usr/local/bin..."
+sudo cp -f /home/artur/.local/bin/apfs-fuse /usr/local/bin/ 2>/dev/null || true
+sudo cp -f /home/artur/.local/bin/apfs-dump-quick /usr/local/bin/ 2>/dev/null || true
+sudo cp -f /home/artur/.local/bin/mkfs.hfsplus /usr/local/bin/ 2>/dev/null || true
+sudo cp -f /home/artur/.local/bin/fsck.hfsplus /usr/local/bin/ 2>/dev/null || true
+sudo cp -f /home/artur/.local/bin/rsync /usr/local/bin/ 2>/dev/null || true
+sudo chmod +x /usr/local/bin/{apfs-fuse,apfs-dump-quick,mkfs.hfsplus,fsck.hfsplus,rsync} 2>/dev/null || true
 
 mkdir -p "$DMG_DIR"
 
@@ -40,7 +49,7 @@ done
 
 echo "[2/4] Assembling HFS+ root volume ($OUT_IMG)..."
 rm -f "$OUT_IMG"
-sudo "$SCRIPT_DIR/mkiosroot.sh" \
+sudo env "PATH=/home/artur/.local/bin:/usr/local/bin:/usr/bin:/bin:$PATH" "$SCRIPT_DIR/mkiosroot.sh" \
     "$DMG_DIR/$OS_DMG" \
     "$DMG_DIR/$SYSOS_DMG" \
     "$DMG_DIR/$APPOS_DMG" \

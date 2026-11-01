@@ -18,6 +18,19 @@
 # keybagd reads with /defaults/no-effaceable-storage (tools/mkadt.py).
 set -euo pipefail
 
+# Ensure ~/.local/bin and standard binary locations are searched
+export PATH="/home/artur/.local/bin:/usr/local/bin:/usr/bin:/bin:${PATH:-}"
+
+# If running as root, ensure utilities exist in /usr/local/bin for standard secure_path
+if [[ "${EUID:-$(id -u)}" -eq 0 && -d "/home/artur/.local/bin" ]]; then
+	for b in apfs-fuse apfs-dump-quick mkfs.hfsplus fsck.hfsplus rsync; do
+		if [[ -f "/home/artur/.local/bin/$b" && ! -f "/usr/local/bin/$b" ]]; then
+			cp -f "/home/artur/.local/bin/$b" "/usr/local/bin/$b" 2>/dev/null || true
+			chmod +x "/usr/local/bin/$b" 2>/dev/null || true
+		fi
+	done
+fi
+
 [[ $# -ge 4 ]] || { sed -n '2,12p' "$0"; exit 2; }
 os=$(realpath "$1") sysos=$(realpath "$2") appos=$(realpath "$3") out=$4 size=${5:-16G}
 [[ ! -e $out ]] || { echo "refusing to overwrite $out" >&2; exit 1; }
