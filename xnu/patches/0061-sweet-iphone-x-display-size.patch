@@ -97,7 +97,7 @@
  	bool fDown[SWEET_TOUCH_FINGERS];
  	IOFixed fX[SWEET_TOUCH_FINGERS];
  	IOFixed fY[SWEET_TOUCH_FINGERS];
-@@ -422,6 +423,12 @@
+@@ -422,6 +423,19 @@
  	if (!fLock || !IOHIDEventService::start(provider)) {
  		return false;
  	}

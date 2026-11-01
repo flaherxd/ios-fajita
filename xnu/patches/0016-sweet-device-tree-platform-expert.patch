@@ -1,7 +1,7 @@
 diff --git a/iokit/KernelConfigTables.cpp b/iokit/KernelConfigTables.cpp
 --- a/iokit/KernelConfigTables.cpp
 +++ b/iokit/KernelConfigTables.cpp
-@@ -34,6 +34,14 @@
+@@ -34,6 +34,22 @@
  
  const char * gIOKernelConfigTables =
      "("
@@ -38,7 +38,7 @@ diff --git a/iokit/Kernel/arm/SweetPlatformExpert.cpp b/iokit/Kernel/arm/SweetPl
 new file mode 100644
 --- /dev/null
 +++ b/iokit/Kernel/arm/SweetPlatformExpert.cpp
-@@ -0,0 +1,86 @@
+@@ -0,0 +1,94 @@
 +/*
 + * Minimal device-tree platform expert for Redmi Note 10 Pro (sweet).
 + * Uses XNU's normal platform, power-domain and nub initialization. Hardware

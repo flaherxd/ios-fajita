@@ -1,7 +1,7 @@
 diff --git a/osfmk/arm64/arm_vm_init.c b/osfmk/arm64/arm_vm_init.c
 --- a/osfmk/arm64/arm_vm_init.c
 +++ b/osfmk/arm64/arm_vm_init.c
-@@ -1825,6 +1825,32 @@
+@@ -1825,6 +1825,36 @@
  #define ARM64_PHYSMAP_ALIGNMENT_PADDING (PTOV_TABLE_SIZE * ARM_TT_TWIG_SIZE)
  #endif
  
@@ -100,7 +100,7 @@ diff --git a/osfmk/arm64/sweet_early.c b/osfmk/arm64/sweet_early.c
   */
  #include <arm64/sweet_early.h>
  
-@@ -10,7 +11,8 @@
+@@ -10,7 +11,12 @@
  #include <stdint.h>
  #include <kern/misc_protos.h>
  

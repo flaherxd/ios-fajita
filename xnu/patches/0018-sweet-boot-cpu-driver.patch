@@ -2,7 +2,7 @@ diff --git a/iokit/Kernel/arm/SweetCPU.cpp b/iokit/Kernel/arm/SweetCPU.cpp
 new file mode 100644
 --- /dev/null
 +++ b/iokit/Kernel/arm/SweetCPU.cpp
-@@ -0,0 +1,171 @@
+@@ -0,0 +1,175 @@
 +/*
 + * Single-CPU bring-up for sweet using XNU's legacy IOCPU interface.
 + * The architected timer and SGI1 already enter through pe_fiq/sleh_irq.
@@ -181,7 +181,7 @@ new file mode 100644
 diff --git a/iokit/KernelConfigTables.cpp b/iokit/KernelConfigTables.cpp
 --- a/iokit/KernelConfigTables.cpp
 +++ b/iokit/KernelConfigTables.cpp
-@@ -41,6 +41,12 @@
+@@ -41,6 +41,22 @@
      "     'IONameMatch'     = 'xiaomi,sweet';"
      "     'IOProbeScore'    = 10000:32;"
      "   },"
